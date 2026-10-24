@@ -66,11 +66,13 @@ Before starting, set `JWT_SECRET` in `backend/.env` to a long, randomly generate
 ### Deploy Backend to Render
 
 1. Push this project to a GitHub repository and create a new Render Blueprint from it. Render will detect the root `render.yaml`.
-2. Enter the connection details for an existing PostgreSQL database when prompted for `PGHOST`, `PGUSER`, `PGPASSWORD`, and `PGDATABASE`. Keep the database reachable from the Render service; use port `5432` unless your provider specifies otherwise. Render generates `JWT_SECRET` for the service.
-3. Before using the API, execute `backend/schema.sql` against that database to create the tables and indexes. The backend does not apply the PostgreSQL schema automatically.
+2. The Blueprint provisions a PostgreSQL database and links it to the backend using Render's private connection string. Render generates `JWT_SECRET` for the service.
+3. On startup, the backend applies `backend/schema.sql` to create the tables and indexes.
 4. After deployment, check the service's `onrender.com` URL. A successful health check returns the ShadowGuard API server status. REST endpoints are under `/api`; WebSocket clients connect to `/ws` on the same host using `wss://`.
 
 Firebase Cloud Messaging is optional; set `FIREBASE_SERVICE_ACCOUNT_JSON` in the Render service environment if push notifications are required. Do not commit database credentials, Firebase credentials, or JWT secrets.
+
+The Blueprint uses Render's free web-service and PostgreSQL plans for testing. Free web services may spin down when idle, briefly delaying reconnection, and free PostgreSQL databases expire after 30 days. Upgrade the database to a paid plan before relying on it for long-term data storage.
 
 For complete setup details and testing procedures, refer to:
 - `BUILD_INSTRUCTIONS.md`

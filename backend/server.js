@@ -75,10 +75,15 @@ app.get('/', (req, res) => {
 // Initialize Real-time WebSocket Server
 wsManager.initWebSocketServer(wss);
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`=================================================`);
-  console.log(`  SHADOWGUARD MONITORING BACKEND RUNNING        `);
-  console.log(`  HTTP Server: http://0.0.0.0:${PORT}`);
-  console.log(`  WebSocket:   ws://0.0.0.0:${PORT}/ws`);
-  console.log(`=================================================`);
+db.initialize().then(() => {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`=================================================`);
+    console.log(`  SHADOWGUARD MONITORING BACKEND RUNNING        `);
+    console.log(`  HTTP Server: http://0.0.0.0:${PORT}`);
+    console.log(`  WebSocket:   ws://0.0.0.0:${PORT}/ws`);
+    console.log(`=================================================`);
+  });
+}).catch(error => {
+  console.error('[Database] Initialization failed:', error);
+  process.exitCode = 1;
 });

@@ -3,13 +3,14 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-const usePg = process.env.DB_DRIVER === 'postgres' || Boolean(process.env.PGHOST);
+const usePg = process.env.DB_DRIVER === 'postgres' || Boolean(process.env.DATABASE_URL) || Boolean(process.env.PGHOST);
 
 let pgPool = null;
 let sqliteDb = null;
 
 if (usePg) {
   pgPool = new Pool({
+    ...(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : {}),
     user: process.env.PGUSER || 'postgres',
     host: process.env.PGHOST || 'localhost',
     database: process.env.PGDATABASE || 'shadowguard',
@@ -105,6 +106,14 @@ if (usePg) {
   });
 }
 
+async function initialize() {
+  if (usePg && pgPool) {
+    const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+    await pgPool.query(schema);
+    console.log('[Database] PostgreSQL schema initialized');
+  }
+}
+
 async function query(text, params = []) {
   if (usePg && pgPool) {
     const res = await pgPool.query(text, params);
@@ -135,4 +144,4 @@ async function query(text, params = []) {
   }
 }
 
-module.exports = { query };
+module.exports = { initialize, query };
